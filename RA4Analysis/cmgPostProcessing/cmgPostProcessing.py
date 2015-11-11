@@ -1,9 +1,9 @@
 import ROOT
 import sys, os, copy, random, subprocess, datetime
 from array import array
-from Workspace.RA4Analysis.cmgObjectSelection import cmgLooseLepIndices, splitIndList, get_cmg_jets_fromStruct, splitListOfObjects, cmgTightMuID, cmgTightEleID
+from Workspace.RA4Analysis.cmgObjectSelection import cmgLooseLepIndices, splitIndList, get_cmg_jets_fromStruct, splitListOfObjects, cmgTightMuID, cmgTightEleID, cmgAntiSelEleIndices, cmgAntiSelEleIndicesFromOther
 from Workspace.HEPHYPythonTools.xsec import xsec
-from Workspace.HEPHYPythonTools.helpers import getObjFromFile, getObjDict, getFileList
+from Workspace.HEPHYPythonTools.helpers import getObjFromFile, getObjDict, getFileList, deltaR2
 from Workspace.HEPHYPythonTools.convertHelpers import compileClass, readVar, printHeader, typeStr, createClassString
 
 from math import *
@@ -19,14 +19,15 @@ from Workspace.HEPHYPythonTools.helpers import getChunks
 #from Workspace.RA4Analysis.cmgTuples_Spring15_50ns import *
 #from Workspace.RA4Analysis.cmgTuples_Data50ns_1l import *
 #from Workspace.RA4Analysis.cmgTuples_Data25ns import *
-from Workspace.RA4Analysis.cmgTuples_Spring15_25ns_fromArtur import *
+#from Workspace.RA4Analysis.cmgTuples_Spring15_25ns_fromArtur import *
+from Workspace.RA4Analysis.cmgTuples_Spring15_25ns_fromArturV2 import *
 from Workspace.RA4Analysis.cmgTuples_data_25ns_fromArtur import *
 
 target_lumi = 3000 #pb-1
 
 defSampleStr = "TTJets_LO_HT600to800_25ns"
 
-subDir = "postProcessed_Spring15_Polarization_v1"
+subDir = "postProcessed_Spring15_antiSelection_v1"
 
 #branches to be kept for data and MC
 branchKeepStrings_DATAMC = ["run", "lumi", "evt", "isData", "rho", "nVert", 
@@ -61,6 +62,8 @@ parser.add_option("--skim", dest="skim", default="", type="string", action="stor
 parser.add_option("--leptonSelection", dest="leptonSelection", default="hard", type="string", action="store", help="which lepton selection? 'soft', 'hard', 'none', 'dilep'?")
 parser.add_option("--small", dest="small", default = False, action="store_true", help="Just do a small subset.")
 parser.add_option("--overwrite", dest="overwrite", default = False, action="store_true", help="Overwrite?")
+parser.add_option("--crossCleanAntiSel", dest="crossCleanAntiSel", default = False, action="store_true", help="Cross-clean jets with anti selected electrons from the LepOther collection?")
+
 
 (options, args) = parser.parse_args()
 assert options.leptonSelection in ['soft', 'hard', 'none', 'dilep'], "Unknown leptonSelection: %s"%options.leptonSelection
@@ -187,30 +190,30 @@ def getGenTopWLepton(c):
   p4t = ROOT.LorentzVector(t.Px(),t.Py(),t.Pz(),t.E())
   return p4t, p4w, p4lepton
 
-def cleanJetsAndLeptons(jets,leptons,deltaR,arbitration):
-    dr2 = deltaR**2
-    goodjet = [ True for j in jets ]
-    goodlep = [ True for l in leptons ]
-    for il, l in enumerate(leptons):
-        ibest, d2m = -1, dr2
-        for i,j in enumerate(jets):
-            d2i = deltaR2(l.eta(),l.phi(), j.eta(),j.phi())
-            if d2i < dr2:
-                choice = arbitration(j,l)
-                if choice == j:
-                   # if the two match, and we prefer the jet, then drop the lepton and be done
-                   goodlep[il] = False
-                   break
-                elif choice == (j,l) or choice == (l,j):
-                   # asked to keep both, so we don't consider this match
-                   continue
-            if d2i < d2m:
-                ibest, d2m = i, d2i
-        # this lepton has been killed by a jet, then we clean the jet that best matches it
-        if not goodlep[il]: continue
-        if ibest != -1: goodjet[ibest] = False
-    return ( [ j for (i ,j) in enumerate(jets)    if goodjet[i ] == True ],
-             [ l for (il,l) in enumerate(leptons) if goodlep[il] == True ] )
+def cleanJetsAndLeptons(jets,leptons,dR=0.4):
+  dr2 = dR**2
+  goodjet = [ True for j in jets ]
+  goodlep = [ True for l in leptons ]
+  for il, l in enumerate(leptons):
+    ibest, d2m = -1, dr2
+    for i,j in enumerate(jets):
+        d2i = deltaR2(l,j)
+#        if d2i < dr2:
+#          choice = arbitration(j,l)
+#          if choice == j:
+#             # if the two match, and we prefer the jet, then drop the lepton and be done
+#             goodlep[il] = False
+#             break
+#          elif choice == (j,l) or choice == (l,j):
+#             # asked to keep both, so we don't consider this match
+#             continue
+        if d2i < d2m:
+          ibest, d2m = i, d2i
+    # this lepton has been killed by a jet, then we clean the jet that best matches it
+    if not goodlep[il]: continue
+    if ibest != -1: goodjet[ibest] = False
+  return ( [ j for (i ,j) in enumerate(jets)    if goodjet[i ] == True ],\
+           [ l for (il,l) in enumerate(leptons) if goodlep[il] == True ] )
 
 exec('allSamples=['+options.allsamples+']')
 for isample, sample in enumerate(allSamples):
@@ -242,7 +245,8 @@ for isample, sample in enumerate(allSamples):
   aliases = [ "met:met_pt", "metPhi:met_phi"]
 
   readVectors = [\
-    {'prefix':'LepGood', 'nMax':8, 'vars':['pt/F', 'eta/F', 'phi/F', 'pdgId/I', 'relIso03/F','SPRING15_25ns_v1/I' ,'tightId/I', 'miniRelIso/F','mass/F','sip3d/F','mediumMuonId/I', 'mvaIdPhys14/F','mvaIdSpring15/F','lostHits/I', 'convVeto/I', 'charge/I']},
+    {'prefix':'LepGood', 'nMax':8, 'vars':['pt/F', 'eta/F', 'phi/F', 'pdgId/I', 'relIso03/F','SPRING15_25ns_v1/I','eleCBID_SPRING15_25ns/I' ,'tightId/I', 'miniRelIso/F','mass/F','sip3d/F','mediumMuonId/I', 'mvaIdPhys14/F','mvaIdSpring15/F','lostHits/I', 'convVeto/I', 'charge/I']},
+    {'prefix':'LepOther', 'nMax':8, 'vars':['pt/F', 'eta/F', 'phi/F', 'pdgId/I', 'relIso03/F','SPRING15_25ns_v1/I','eleCBID_SPRING15_25ns/I' ,'tightId/I', 'miniRelIso/F','mass/F','sip3d/F','mediumMuonId/I', 'mvaIdPhys14/F','mvaIdSpring15/F','lostHits/I', 'convVeto/I', 'charge/I']},
     #{'prefix':'LepGood',  'nMax':8, 'vars':['pt/F', 'eta/F', 'phi/F', 'pdgId/I', 'relIso03/F', 'tightId/I', 'miniRelIso/F','mass/F','sip3d/F','mediumMuonId/I', 'mvaIdPhys14/F','lostHits/I', 'convVeto/I']},
     {'prefix':'Jet',  'nMax':100, 'vars':['pt/F', 'eta/F', 'phi/F', 'id/I','btagCSV/F', 'btagCMVA/F']},
   ]
@@ -251,7 +255,7 @@ for isample, sample in enumerate(allSamples):
     aliases.extend(['genMet:met_genPt', 'genMetPhi:met_genPhi'])
     #readVectors[1]['vars'].extend('partonId/I')
   if options.leptonSelection.lower() in ['soft', 'hard']:
-    newVariables.extend( ['nLooseSoftLeptons/I', 'nLooseHardLeptons/I', 'nTightSoftLeptons/I', 'nTightHardLeptons/I'] )
+    newVariables.extend( ['nLooseSoftLeptons/I', 'nLooseHardLeptons/I', 'nTightSoftLeptons/I', 'nTightHardLeptons/I', 'nAntiSelectedSoftElectrons/I', 'nAntiSelectedHardElectrons/I'] )
     newVariables.extend( ['deltaPhi_Wl/F','nBJetMediumCSV30/I','nJet30/I','htJet30j/F','st/F', 'leptonPt/F','leptonMiniRelIso/F','leptonRelIso03/F' ,'leptonEta/F', 'leptonPhi/F', 'leptonSPRING15_25ns_v1/I/-2', 'leptonPdg/I/0', 'leptonInd/I/-1', 'leptonMass/F', 'singleMuonic/I', 'singleElectronic/I', 'singleLeptonic/I' ]) #, 'mt2w/F'] )
   newVars = [readVar(v, allowRenaming=False, isWritten = True, isRead=False) for v in newVariables]
 
@@ -335,14 +339,24 @@ for isample, sample in enumerate(allSamples):
           tightHardLepInd = filter(lambda i:(abs(r.LepGood_pdgId[i])==11 and cmgTightEleID(r,i)) \
                                          or (abs(r.LepGood_pdgId[i])==13 and cmgTightMuID(r,i)), looseHardLepInd)  
 
-
+          #get anti selected electron indices from LepGood collection
+          antiSelEleInd = cmgAntiSelEleIndices(r)
+          #split into hard  and soft anti selected electrons from LepGood collection
+          antiSelSoftEleInd, antiSelHardEleInd = splitIndList(r.LepGood_pt, antiSelEleInd, 25.)
+          #get anti selected electron indices from LepOther collection
+          antiSelEleIndFromOther = cmgAntiSelEleIndicesFromOther(r)
+          #split into hard  and soft anti selected electrons from LepOther collection
+          antiSelSoftEleIndFromOther, antiSelHardEleIndFromOther = splitIndList(r.LepOther_pt, antiSelEleIndFromOther, 25.)
+          s.nAntiSelectedSoftElectrons = len(antiSelSoftEleInd)+len(antiSelSoftEleIndFromOther)          
+          s.nAntiSelectedHardElectrons = len(antiSelHardEleInd)+len(antiSelHardEleIndFromOther)
+          
           #print "s lepgood pt: " ,s.LepGood_pt[0]
           s.nLooseSoftLeptons = len(looseSoftLepInd)
           s.nLooseHardLeptons = len(looseHardLepInd)
           s.nTightSoftLeptons = len(tightSoftLepInd)
           s.nTightHardLeptons = len(tightHardLepInd)
           #print "tightHardLepInd:" , tightHardLepInd
-          vars = ['pt', 'eta', 'phi', 'miniRelIso','relIso03', 'pdgId', 'SPRING15_25ns_v1']
+          vars = ['pt', 'eta', 'phi', 'miniRelIso','relIso03', 'pdgId', 'SPRING15_25ns_v1', 'mass']
           allLeptons = [getObjDict(t, 'LepGood_', vars, i) for i in looseLepInd]
           looseSoftLep = [getObjDict(t, 'LepGood_', vars, i) for i in looseSoftLepInd] 
           looseHardLep = [getObjDict(t, 'LepGood_', vars, i) for i in looseHardLepInd]
@@ -439,19 +453,42 @@ for isample, sample in enumerate(allSamples):
           j_list=['eta','pt','phi','btagCMVA', 'btagCSV', 'id']
           #if not sample['isData']: j_list.extend('partonId')
           jets = filter(lambda j:j['pt']>30 and abs(j['eta'])<2.4 and j['id'], get_cmg_jets_fromStruct(r,j_list))
-          #print "jets:" , jets
-#          lightJets_, bJetsCMVA = splitListOfObjects('btagCMVA', 0.732, jets) 
-          lightJets,  bJetsCSV = splitListOfObjects('btagCSV', 0.890, jets)
-          #print "bjetsCMVA:" , bJetsCMVA , "bjetsCSV:" ,  bJetsCSV
-          s.htJet30j = sum([x['pt'] for x in jets])
-          s.nJet30 = len(jets)
-#          s.nBJetMediumCMVA30 = len(bJetsCMVA)
-          s.nBJetMediumCSV30 = len(bJetsCSV)
-          #print "nbjetsCMVA:" , s.nBJetMediumCMVA30  ,"nbjetsCSV:" ,  s.nBJetMediumCSV30
-          #s.mt2w = mt2w.mt2w(met = {'pt':r.met_pt, 'phi':r.met_phi}, l={'pt':s.leptonPt, 'phi':s.leptonPhi, 'eta':s.leptonEta}, ljets=lightJets, bjets=bJetsCSV)
-          s.deltaPhi_Wl = acos((s.leptonPt+r.met_pt*cos(s.leptonPhi-r.met_phi))/sqrt(s.leptonPt**2+r.met_pt**2+2*r.met_pt*s.leptonPt*cos(s.leptonPhi-r.met_phi))) 
+          #cross-clean jets with anti selected electrons from LepOther collection
+          if s.nTightHardLeptons==0:
+            if s.nAntiSelectedHardElectrons>=1:
+              leptons = [getObjDict(t, 'LepGood_', vars, i) for i in antiSelHardEleInd]
+              otherLeptons = [getObjDict(t, 'LepOther_', vars, i) for i in antiSelHardEleIndFromOther]
+              if options.crossCleanAntiSel:
+                cleanJetsAntiSel, cleanLepAntiSel = cleanJetsAndLeptons(jets,otherLeptons)
+                lightJets,  bJetsCSV = splitListOfObjects('btagCSV', 0.890, cleanJetsAntiSel)
+                s.htJet30j = sum([x['pt'] for x in cleanJetsAntiSel])
+                s.nJet30 = len(cleanJetsAntiSel)
+                s.nBJetMediumCSV30 = len(bJetsCSV)
+              antiSelEle = leptons + otherLeptons
+              antiSelEle = sorted(antiSelEle, key=lambda k: k['pt'],reverse=True)
+              s.leptonPt  = antiSelEle[0]['pt']
+              s.leptonEta = antiSelEle[0]['eta']
+              s.leptonPhi = antiSelEle[0]['phi']
+              s.leptonPdg = antiSelEle[0]['pdgId']
+              s.leptonMass= antiSelEle[0]['mass']
+              s.leptonMiniRelIso = antiSelEle[0]['miniRelIso']
+              s.leptonRelIso03 = antiSelEle[0]['relIso03']
+              s.st = r.met_pt + s.leptonPt
+          else:
+            #print "jets:" , jets
+#            lightJets_, bJetsCMVA = splitListOfObjects('btagCMVA', 0.732, jets) 
+            lightJets,  bJetsCSV = splitListOfObjects('btagCSV', 0.890, jets)
+            #print "bjetsCMVA:" , bJetsCMVA , "bjetsCSV:" ,  bJetsCSV
+            s.htJet30j = sum([x['pt'] for x in jets])
+            s.nJet30 = len(jets)
+#            s.nBJetMediumCMVA30 = len(bJetsCMVA)
+            s.nBJetMediumCSV30 = len(bJetsCSV)
+            #print "nbjetsCMVA:" , s.nBJetMediumCMVA30  ,"nbjetsCSV:" ,  s.nBJetMediumCSV30
+            #s.mt2w = mt2w.mt2w(met = {'pt':r.met_pt, 'phi':r.met_phi}, l={'pt':s.leptonPt, 'phi':s.leptonPhi, 'eta':s.leptonEta}, ljets=lightJets, bjets=bJetsCSV)
+            s.deltaPhi_Wl = acos((s.leptonPt+r.met_pt*cos(s.leptonPhi-r.met_phi))/sqrt(s.leptonPt**2+r.met_pt**2+2*r.met_pt*s.leptonPt*cos(s.leptonPhi-r.met_phi))) 
           #print "deltaPhi:" , s.deltaPhi_Wl
   #          print "Warning -> Why can't I compute mt2w?", s.mt2w, len(jets), len(bJets), len(allTightLeptons),lightJets,bJets, {'pt':s.type1phiMet, 'phi':s.type1phiMetphi}, {'pt':s.leptonPt, 'phi':s.leptonPhi, 'eta':s.leptonEta}
+              
         for v in newVars:
           v['branch'].Fill()
       newFileName = sample['name']+'_'+chunk['name']+'_'+str(iSplit)+'.root'

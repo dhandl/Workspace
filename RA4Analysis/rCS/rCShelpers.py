@@ -13,14 +13,14 @@ def makeWeight(lumi=4., sampleLumi=3.,debug=False):
     print 'No lumi-reweighting done!!'
     return 'weight', 'weight*weight'
   else:
-    weight_str = '(((weight)/'+str(sampleLumi)+')*'+str(lumi)+')'
+    weight_str = '(((weight_TTPolMinus5)/'+str(sampleLumi)+')*'+str(lumi)+')'
     weight_err_str = '('+weight_str+'*'+weight_str+')'
     return weight_str, weight_err_str
 
 
 #ROOT.TH1F().SetDefaultSumw2()
 
-def getRCS(c, cut, dPhiCut, useGenMet=False, useAllGen=False, useOnlyGenMetPt=False, useOnlyGenMetPhi=False, useWeight = True, weight='weight'):   
+def getRCS(c, cut, dPhiCut, useGenMet=False, useAllGen=False, useOnlyGenMetPt=False, useOnlyGenMetPhi=False, useWeight = True, weight='weight_TTPolMinus5'):   
   if useGenMet: dPhiStr = "acos((leptonPt+met_genPt*cos(leptonPhi-met_genPhi))/sqrt(leptonPt**2+met_genPt**2+2*met_genPt*leptonPt*cos(leptonPhi-met_genPhi)))"
   elif useAllGen: dPhiStr = "acos((genLep_pt+met_genPt*cos(genLep_phi-met_genPhi))/sqrt(genLep_pt**2+met_genPt**2+2*met_genPt*genLep_pt*cos(genLep_phi-met_genPhi)))"
   elif useOnlyGenMetPt: dPhiStr = "acos((leptonPt+met_genPt*cos(leptonPhi-met_phi))/sqrt(leptonPt**2+met_genPt**2+2*met_genPt*leptonPt*cos(leptonPhi-met_phi)))"

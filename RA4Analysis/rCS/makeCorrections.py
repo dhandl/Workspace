@@ -47,7 +47,7 @@ if not os.path.exists(printDir):
 weight_str, weight_err_str = makeWeight(lumi, sampleLumi=3.)
 
 
-prefix = 'singleLeptonic_Spring15'
+prefix = 'singleLeptonic_Spring15_TTPolMinus5'
 presel = "singleLeptonic&&nLooseHardLeptons==1&&nTightHardLeptons==1&&Jet_pt[1]>80"
 btagString = 'nBJetMediumCSV30'
 

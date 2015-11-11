@@ -33,6 +33,19 @@ def cmgTightEleID(r, nLep):
     #and cmgMVAEleID(r,nLep,ele_MVAID_cuts_tight) \
     #and r.LepGood_lostHits[nLep]<=0 and r.LepGood_convVeto[nLep] and abs(r.LepGood_sip3d[nLep])<4
 
+def cmgAntiSelEleID(r, nLep):
+  return abs(r.LepGood_pdgId[nLep])==11 and r.LepGood_pt[nLep]>=10 and abs(r.LepGood_eta[nLep])<2.5 and r.LepGood_eleCBID_SPRING15_25ns[nLep]<3
+
+def cmgAntiSelEleIDfromOther(r, nLep):
+  return abs(r.LepOther_pdgId[nLep])==11 and r.LepOther_pt[nLep]>=10 and abs(r.LepOther_eta[nLep])<2.5 and r.LepOther_eleCBID_SPRING15_25ns[nLep]<3
+
+def cmgAntiSelEleIndices(r, nMax=8):
+  return [i for i in range(min(nMax, r.nLepGood)) if cmgAntiSelEleID(r, nLep=i) ]
+
+def cmgAntiSelEleIndicesFromOther(r, nMax=8):
+  return [i for i in range(min(nMax, r.nLepOther)) if cmgAntiSelEleIDfromOther(r, nLep=i) ]
+  
+
 #and r.LepGood_lostHits[nLep]<=0 and r.LepGood_convVeto[nLep] 
 
 #def cmgLooseLepID(r, nLep, ptCuts, absEtaCuts, hybridIso03):

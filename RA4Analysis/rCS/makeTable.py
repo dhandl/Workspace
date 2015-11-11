@@ -12,7 +12,7 @@ useWcorrection = False
 useTTcorrection = False
 signal = False
 
-prefix = 'singleLeptonic_Spring15'
+prefix = 'singleLeptonic_Spring15_TTPolMinus5'
 path = '/data/'+username+'/Spring15/25ns/PredictionAN_3.0/' 
 
 res = pickle.load(file(path+prefix+'_estimationResults_pkl_kappa_corrected'))

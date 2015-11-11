@@ -24,7 +24,7 @@ preprefix = 'QCDestimation/TupelsFromArtur/CB_ID'
 wwwDir = '/afs/hephy.at/user/d/dhandl/www/RunII/Spring15_25ns/'+preprefix+'/'
 picklePath = '/data/'+username+'/results2015/QCDEstimation/'
 presel = 'Lp_singleElectronic_'
-picklePresel = '20151102_QCDestimation_reducedSR_pkl'
+picklePresel = '20151111_QCDestimation_45CR_pkl'
 
 if not os.path.exists(wwwDir):
   os.makedirs(wwwDir)
@@ -64,6 +64,19 @@ signalRegion = {(3, 4): {(250, 350): {(500, -1):   {'deltaPhi': 1.0}, #3-4jets Q
                                       (750, -1):   {'deltaPhi': 1.0}},
                           (350, 450):{(500, -1):   {'deltaPhi': 0.75}},
                           (450, -1): {(500, -1):   {'deltaPhi': 0.75}}}
+}
+
+signalRegion = {
+                (3, 4):  {(350, -1): {(500, -1):    {'deltaPhi': 0.75}},
+                          (450, -1): {(500, 750):   {'deltaPhi': 0.75},
+                                      (750,  -1):   {'deltaPhi': 0.75}}},
+                (4, 5):  {(350, -1): {(500, -1):    {'deltaPhi': 0.75}},
+                          (450, -1): {(500, 750):   {'deltaPhi': 0.75},
+                                      (750, -1):    {'deltaPhi': 0.75}}}
+#                (5, 5):  {(450, -1): {(500, -1):    {'deltaPhi': 0.75}}},
+#                (6, 7):  {(450, -1): {(500, 750):   {'deltaPhi': 0.75},
+#                                      (750, -1):    {'deltaPhi': 0.75}}},
+#                (8, -1): {(350, -1): {(500, -1):    {'deltaPhi': 0.75}}}
 }
 
 #signalRegion = {(3, 4): {(250, -1): {(500, -1):   {'deltaPhi': 0.5}}}, #QCD CR
@@ -124,7 +137,8 @@ def getPseudoRCS(small,smallE,large,largeE):
 
 #trigger and filters for real Data
 trigger = "&&(HLT_EleHT350||HLT_MuHT350)"
-filters = "&&Flag_CSCTightHaloFilter&&Flag_HBHENoiseFilter_fix&&Flag_HBHENoiseIsoFilter&&Flag_goodVertices&&Flag_eeBadScFilter"
+filters = "&&Flag_CSCTightHaloFilter&&Flag_HBHENoiseFilter_fix&&Flag_HBHENoiseFilter&&Flag_goodVertices&&Flag_eeBadScFilter&&Flag_EcalDeadCellTriggerPrimitiveFilter"
+#filters = "&&Flag_CSCTightHaloFilter&&Flag_HBHENoiseFilter_fix&&Flag_HBHENoiseIsoFilter&&Flag_goodVertices&&Flag_eeBadScFilter"
 
 #e_tight       = "(abs(LepGood_pdgId)==11&&LepGood_pt>=10&&abs(LepGood_eta)<=2.5&&LepGood_miniRelIso<0.1&&LepGood_SPRING15_25ns_v1==4)" 
 #n_tight_e =  "(Sum$("+e_tight+"))"
@@ -316,8 +330,8 @@ for srNJet in signalRegion:
 #            lumi = sample['chain'].GetLeaf('lumi').GetValue()
 #            print sample['name'], run, lumi, evt
 
-          sample['chain'].Draw(LpStr+'>>'+sample['name']+'_antiSelection','('+str(sample['weight'])+')*xsec*(genWeight)*('+antiSelCut+')')
-          sample['chain'].Draw(LpStr+'>>'+sample['name']+'_Selection','('+str(sample['weight'])+')*xsec*(genWeight)*('+SelCut+')')
+          sample['chain'].Draw(LpStr+'>>'+sample['name']+'_antiSelection','('+str(sample['weight'])+')*xsec*(genWeight)*('+antiSelCut+filters+')')
+          sample['chain'].Draw(LpStr+'>>'+sample['name']+'_Selection','('+str(sample['weight'])+')*xsec*(genWeight)*('+SelCut+filters+')')
 
           histos[sample['name']]['antiSelection'].SetLineColor(sample['color'])
           histos[sample['name']]['antiSelection'].SetLineStyle(ROOT.kDashed)
