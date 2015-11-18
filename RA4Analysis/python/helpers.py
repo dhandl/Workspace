@@ -246,6 +246,92 @@ def binToFileName(a):
       cut+='&&nJet30<='+str(njetb[1])
       name+='-'+str(njetb[1])
 
+def getGenWandLepton(c):
+  genPartAll = [getObjDict(c, 'GenPart_', ['pt','eta','phi','mass','pdgId','motherId','motherIndex'], j) for j in range(int(c.GetLeaf('nGenPart').GetValue()))]
+  lepton = filter(lambda l:abs(l['pdgId']) in [11,13,15], genPartAll)
+  if len(lepton)==0:
+    print "no generated lepton found!"
+    p4w=False
+    p4lepton=False
+    return p4w, p4lepton
+  lFromW = filter(lambda w:abs(w['motherId'])==24, lepton)
+  if len(lFromW)==0:
+    print 'no generated W found!'
+    print lepton
+    p4w=False
+    p4lepton=False
+    return p4w, p4lepton
+  elif len(lFromW)>0:
+    if len(lFromW)>1: print 'this should not have happened'
+    if abs(lFromW[0]['motherId'])!=24: print 'this should not have happened'
+    genW = getObjDict(c, 'GenPart_', ['pt','eta','phi','mass','pdgId','motherId','motherIndex'], int(lFromW[0]['motherIndex']))
+    lep = ROOT.TLorentzVector()
+    lep.SetPtEtaPhiM(lFromW[0]['pt'],lFromW[0]['eta'],lFromW[0]['phi'],lFromW[0]['mass'])
+  if abs(genW['pdgId'])!=24: 'this should not have happened'
+  W = ROOT.TLorentzVector()
+  W.SetPtEtaPhiM(genW['pt'],genW['eta'],genW['phi'],genW['mass'])
+  p4lepton = ROOT.LorentzVector(lep.Px(),lep.Py(),lep.Pz(),lep.E())
+  p4w = ROOT.LorentzVector(W.Px(),W.Py(),W.Pz(),W.E())
+  return p4w, p4lepton
+
+def getGenTopWLepton(c):
+  genPartAll = [getObjDict(c, 'GenPart_', ['pt','eta','phi','mass','pdgId','charge','motherId','motherIndex'], j) for j in range(int(c.GetLeaf('nGenPart').GetValue()))]
+  lepton = filter(lambda l:abs(l['pdgId']) in [11,13,15], genPartAll)
+  if len(lepton)==0:
+    p4t=False
+    p4w=False
+    p4lepton=False
+    return p4t, p4w, p4lepton
+  lFromW = filter(lambda w:abs(w['motherId'])==24, lepton)
+  if len(lFromW)>0:
+    if len(lFromW)==1:
+      if abs(lFromW[0]['motherId'])!=24: print '1)this should not have happened'
+      genW = getObjDict(c, 'GenPart_', ['pt','eta','phi','mass','pdgId','charge','motherId','motherIndex'], int(lFromW[0]['motherIndex']))
+      if abs(genW['pdgId'])!=24: '2)this should not have happened'
+      genTop = getObjDict(c, 'GenPart_', ['pt','eta','phi','mass','pdgId','charge','motherId','motherIndex'], int(genW['motherIndex']))
+      lep = ROOT.TLorentzVector()
+      lep.SetPtEtaPhiM(lFromW[0]['pt'],lFromW[0]['eta'],lFromW[0]['phi'],lFromW[0]['mass'])
+    elif len(lFromW)==2:
+      match = False
+      leadLep = getObjDict(c, 'LepGood_', ['pt','eta','phi','mass','pdgId','charge'], 0)
+      for l in lFromW:
+        if leadLep['charge'] == l['charge']:
+          match = True
+          genW = getObjDict(c, 'GenPart_', ['pt','eta','phi','mass','pdgId','charge','motherId','motherIndex'], int(l['motherIndex']))
+          genTop = getObjDict(c, 'GenPart_', ['pt','eta','phi','mass','pdgId','charge','motherId','motherIndex'], int(genW['motherIndex']))
+          lep = ROOT.TLorentzVector()
+          lep.SetPtEtaPhiM(l['pt'],l['eta'],l['phi'],l['mass'])
+      if not match:
+        print 'No match at all!'
+        p4t=False
+        p4w=False
+        p4lepton=False
+        return p4t, p4w, p4lepton
+  elif len(lFromW)>2 or len(lFromW)==0:
+    print "8) this should not have happened"
+    p4t=False
+    p4w=False
+    p4lepton=False
+    return p4t, p4w, p4lepton
+  t = ROOT.TLorentzVector()
+  W = ROOT.TLorentzVector()
+  W.SetPtEtaPhiM(genW['pt'],genW['eta'],genW['phi'],genW['mass'])
+  t.SetPtEtaPhiM(genTop['pt'],genTop['eta'],genTop['phi'],genTop['mass'])
+  p4lepton = ROOT.LorentzVector(lep.Px(),lep.Py(),lep.Pz(),lep.E())
+  p4w = ROOT.LorentzVector(W.Px(),W.Py(),W.Pz(),W.E())
+  p4t = ROOT.LorentzVector(t.Px(),t.Py(),t.Pz(),t.E())
+  return p4t, p4w, p4lepton
+
+def cleanJets(jets,leptons,dRminCut=0.4):
+  jetClean = []
+  for jet in jets:
+    dRmin = 999
+    for lep in leptons:
+      dR = deltaR(lep,jet)
+      if dR < dRmin: dRmin = dR
+    if dRmin > dRminCut: jetClean.append(jet)
+  return jetClean
+
 #def wRecoPt(chain):
 #  lPt = getVarValue(chain, "leptonPt")
 #  lPhi = getVarValue(chain, "leptonPhi")
