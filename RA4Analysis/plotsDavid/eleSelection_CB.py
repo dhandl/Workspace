@@ -24,7 +24,7 @@ preprefix = 'QCDestimation/TupelsFromArtur/CB_ID'
 wwwDir = '/afs/hephy.at/user/d/dhandl/www/RunII/Spring15_25ns/'+preprefix+'/'
 picklePath = '/data/'+username+'/results2015/QCDEstimation/'
 presel = 'Lp_singleElectronic_'
-picklePresel = '20151111_QCDestimation_45CR_pkl'
+picklePresel = '20151112_QCDestimation_small45CR_pkl'
 
 if not os.path.exists(wwwDir):
   os.makedirs(wwwDir)
@@ -67,12 +67,10 @@ signalRegion = {(3, 4): {(250, 350): {(500, -1):   {'deltaPhi': 1.0}, #3-4jets Q
 }
 
 signalRegion = {
-                (3, 4):  {(350, -1): {(500, -1):    {'deltaPhi': 0.75}},
-                          (450, -1): {(500, 750):   {'deltaPhi': 0.75},
-                                      (750,  -1):   {'deltaPhi': 0.75}}},
-                (4, 5):  {(350, -1): {(500, -1):    {'deltaPhi': 0.75}},
-                          (450, -1): {(500, 750):   {'deltaPhi': 0.75},
-                                      (750, -1):    {'deltaPhi': 0.75}}}
+                (3, 4):  {(350, 450): {(500, -1):    {'deltaPhi': 1.0}},
+                          (450,  -1): {(500, -1):    {'deltaPhi': 1.0}}},
+                (4, 5):  {(350, 450): {(500, -1):    {'deltaPhi': 1.0}},
+                          (450,  -1): {(500, -1):    {'deltaPhi': 1.0}}},
 #                (5, 5):  {(450, -1): {(500, -1):    {'deltaPhi': 0.75}}},
 #                (6, 7):  {(450, -1): {(500, 750):   {'deltaPhi': 0.75},
 #                                      (750, -1):    {'deltaPhi': 0.75}}},

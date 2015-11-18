@@ -9,53 +9,58 @@ from Workspace.HEPHYPythonTools.user import username
 from math import *
 
 #signalRegion = signalRegion3fb
-
-signalRegion = {(3, 4): {(250, 350): {(500, -1):   {'deltaPhi': 1.0}, #3-4jets QCD and W+jets control region
-                                      (500, 750):  {'deltaPhi': 1.0},
-                                      (750, -1):   {'deltaPhi': 1.0}},
-                         (350, 450): {(500, -1):   {'deltaPhi': 1.0},
-                                      (500, -1):   {'deltaPhi': 0.75},
-                                      (500, 750):  {'deltaPhi': 1.0},
-                                      (750, -1):   {'deltaPhi': 1.0}},
-                         (450, -1):  {(500, -1):   {'deltaPhi': 1.0},
-                                      (500, -1):   {'deltaPhi': 0.75},
-                                      (500, 1000): {'deltaPhi': 0.75},
-                                      (1000, -1):  {'deltaPhi': 0.75}}},
-                (4, 5): {(250, 350): {(500, -1):   {'deltaPhi': 1.0}, #4-5jets TTbar control region
-                                      (500, 750):  {'deltaPhi': 1.0},
-                                      (750, -1):   {'deltaPhi': 1.0}},
-                         (350, 450): {(500, -1):   {'deltaPhi': 1.0},
-                                      (500, -1):   {'deltaPhi': 0.75},
-                                      (500, 750):  {'deltaPhi': 1.0},
-                                      (750, -1):   {'deltaPhi': 1.0}},
-                         (450, -1):  {(500, -1):   {'deltaPhi': 1.0},
-                                      (500, -1):   {'deltaPhi': 0.75},
-                                      (500, 1000): {'deltaPhi': 0.75},
-                                      (1000, -1):  {'deltaPhi': 0.75}}},
-                (5, 5): {(250, 350): {(500, -1):   {'deltaPhi': 1.0}},  #signal regions
-                         (350, 450): {(500, -1):   {'deltaPhi': 1.0}},
-                         (450, -1):  {(500, -1):   {'deltaPhi': 1.0}}},
-                (6, 7): {(250, 350): {(500, 750):  {'deltaPhi': 1.0},
-                                      (750, -1):   {'deltaPhi': 1.0}},
-                         (350, 450): {(500, 750):  {'deltaPhi': 1.0},
-                                      (750, -1):   {'deltaPhi': 1.0}},
-                          (450, -1): {(500, 1000): {'deltaPhi': 0.75},
-                                      (1000, -1):  {'deltaPhi': 0.75}}},
-                (8, -1): {(250, 350):{(500, 750):  {'deltaPhi': 1.0},
-                                      (750, -1):   {'deltaPhi': 1.0}},
-                          (350, 450):{(500, -1):   {'deltaPhi': 0.75}},
-                          (450, -1): {(500, -1):   {'deltaPhi': 0.75}}}
+signalRegion = {(3, 4): {(250, 350): {(500, -1):   {(1.0):    {'deltaPhi': 1.0}}, #3-4jets QCD and W+jets control region
+                                      (500, 750):  {(1.0):    {'deltaPhi': 1.0}},
+                                      (750, -1):   {(1.0):    {'deltaPhi': 1.0}}},
+                         (350, -1):  {(500, -1):   {(0.75):   {'deltaPhi': 0.75}}},
+                         (350, 450): {(500, -1):   {(1.0):    {'deltaPhi': 1.0},
+                                                    (0.75):   {'deltaPhi': 0.75}},
+                                      (500, 750):  {(1.0):    {'deltaPhi': 1.0}},
+                                      (750, -1):   {(1.0):    {'deltaPhi': 1.0}}},
+                         (450, -1):  {(500, -1):   {(1.0):    {'deltaPhi': 1.0},
+                                                    (0.75):   {'deltaPhi': 0.75}},
+                                      (500, 750):  {(0.75):   {'deltaPhi': 0.75}},
+                                      (750, -1):   {(0.75):   {'deltaPhi': 0.75}},
+                                      (500, 1000): {(0.75):   {'deltaPhi': 0.75}},
+                                      (1000, -1):  {(0.75):   {'deltaPhi': 0.75}}}},
+                (4, 5): {(250, 350): {(500, -1):   {(1.0):    {'deltaPhi': 1.0}}, #4-5jets TTbar control region
+                                      (500, 750):  {(1.0):    {'deltaPhi': 1.0}},
+                                      (750, -1):   {(1.0):    {'deltaPhi': 1.0}}},
+                         (350, -1):  {(500, -1):   {(0.75):   {'deltaPhi': 0.75}}},
+                         (350, 450): {(500, -1):   {(1.0):    {'deltaPhi': 1.0},
+                                                    (0.75):   {'deltaPhi': 0.75}},
+                                      (500, 750):  {(1.0):    {'deltaPhi': 1.0}},
+                                      (750, -1):   {(1.0):    {'deltaPhi': 1.0}}},
+                         (450, -1):  {(500, -1):   {(1.0):    {'deltaPhi': 1.0},
+                                                    (0.75):   {'deltaPhi': 0.75}},
+                                      (500, 750):  {(0.75):   {'deltaPhi': 0.75}},
+                                      (750, -1):   {(0.75):   {'deltaPhi': 0.75}},
+                                      (500, 1000): {(0.75):   {'deltaPhi': 0.75}},
+                                      (1000, -1):  {(0.75):   {'deltaPhi': 0.75}}}},
+                (5, 5): {(250, 350): {(500, -1):   {(1.0):    {'deltaPhi': 1.0}}},  #signal regions
+                         (350, 450): {(500, -1):   {(1.0):    {'deltaPhi': 1.0}}},
+                         (450, -1):  {(500, -1):   {(1.0):    {'deltaPhi': 1.0},
+                                                    (0.75):   {'deltaPhi': 0.75}}}},
+                (6, 7): {(250, 350): {(500, 750):  {(1.0):    {'deltaPhi': 1.0}},
+                                      (750, -1):   {(1.0):    {'deltaPhi': 1.0}}},
+                         (350, 450): {(500, 750):  {(1.0):    {'deltaPhi': 1.0}},
+                                      (750, -1):   {(1.0):    {'deltaPhi': 1.0}}},
+                          (450, -1): {(500, 750):  {(0.75):   {'deltaPhi': 0.75}},
+                                      (750, -1):   {(0.75):   {'deltaPhi': 0.75}},
+                                      (500, 1000): {(0.75):   {'deltaPhi': 0.75}},
+                                      (1000, -1):  {(0.75):   {'deltaPhi': 0.75}}}},
+                (8, -1): {(250, 350):{(500, 750):  {(1.0):    {'deltaPhi': 1.0}},
+                                      (750, -1):   {(1.0):    {'deltaPhi': 1.0}}},
+                          (350, -1): {(500, -1):   {(0.75):   {'deltaPhi': 0.75}}},
+                          (350, 450):{(500, -1):   {(0.75):   {'deltaPhi': 0.75}}},
+                          (450, -1): {(500, -1):   {(0.75):   {'deltaPhi': 0.75}}}}
 }
 
-#signalRegion = {(3, 4): {(250, -1): {(500, -1):   {'deltaPhi': 0.5}}}, #QCD CR
-#                (4, 5): {(250, -1): {(500, -1):   {'deltaPhi': 0.5}}}, #TTbar CR 1b 
-#                (5, 5): {(250, -1): {(500, -1):   {'deltaPhi': 0.5}}}, #SR 
-#                (6,-1): {(250, -1): {(500, -1):   {'deltaPhi': 0.5}}}} #SR 
 btreg = [(0,0), (1,1), (2,2)] #1b and 2b estimates are needed for the btag fit
 
 #add the path where the pickle files are located
 path = '/data/'+username+'/results2015/QCDEstimation/'
-pickleFile = '20151028_QCDestimation_pkl'
+pickleFile = '20151117_QCDestimation_pkl'
 bins = pickle.load(file(path+pickleFile))
 
 def getNumString(n,ne, acc=2):    ##For printing table 
@@ -92,12 +97,14 @@ for srNJet in sorted(signalRegion):
   for stb in sorted(signalRegion[srNJet]):
     ratio[srNJet][stb] = {}
     for htb in sorted(signalRegion[srNJet][stb]):
-      #res = pickle.load(file(path+'QCDyieldFromTemplateFit_'+nameAndCut(stb, htb, CR, btb=btb, presel="(1)", charge="", btagVar = 'nBJetMediumCSV30')[0]+'_pkl'))
-      res = pickle.load(file(path+pickleFile))
-      ratio[srNJet][stb][htb] = {'F_seltoantisel':res[CR][stb][htb][btb]['F_seltoantisel'], 'F_seltoantisel_err':res[CR][stb][htb][btb]['F_seltoantisel_err'],\
-                                 'NQCDSelMC':res[CR][stb][htb][btb]['NQCDSelMC'], 'NQCDSelMC_err':res[CR][stb][htb][btb]['NQCDSelMC_err'],\
-                                 'NQCDFit':res[CR][stb][htb][btb]['QCD']['yield'], 'NQCDFit_err':sqrt(res[CR][stb][htb][btb]['QCD']['yieldVar']),\
-                                 'NDATASel':res[CR][stb][htb][btb]['NDATASel'], 'NDATASel_err':res[CR][stb][htb][btb]['NDATASel_err']}
+      ratio[srNJet][stb][htb]={}
+      for dP in sorted(signalRegion[srNJet][stb][htb]):
+        #res = pickle.load(file(path+'QCDyieldFromTemplateFit_'+nameAndCut(stb, htb, CR, btb=btb, presel="(1)", charge="", btagVar = 'nBJetMediumCSV30')[0]+'_pkl'))
+        res = pickle.load(file(path+pickleFile))
+        ratio[srNJet][stb][htb][dP] = {'F_seltoantisel':res[CR][stb][htb][btb][dP]['F_seltoantisel'], 'F_seltoantisel_err':res[CR][stb][htb][btb][dP]['F_seltoantisel_err'],\
+                                 'NQCDSelMC':res[CR][stb][htb][btb][dP]['NQCDSelMC'], 'NQCDSelMC_err':res[CR][stb][htb][btb][dP]['NQCDSelMC_err'],\
+                                 'NQCDFit':res[CR][stb][htb][btb][dP]['QCD']['yield'], 'NQCDFit_err':sqrt(res[CR][stb][htb][btb][dP]['QCD']['yieldVar']),\
+                                 'NDATASel':res[CR][stb][htb][btb][dP]['NDATASel'], 'NDATASel_err':res[CR][stb][htb][btb][dP]['NDATASel_err']}
 
 #nAntiSel = pickle.load(file(path+'RcsQCD3fb-1_pkl'))
 #nCRAntiSel = pickle.load(file(path+'RcsQCD_4-5j_1b_3fb-1_pkl'))
@@ -116,21 +123,22 @@ for srNJet in sorted(signalRegion):
 #print only yields and ratios from the CR
 print " QCD estimation and ratios in CR"
 print
-print '\\begin{table}[ht]\\begin{center}\\resizebox{\\textwidth}{!}{\\begin{tabular}{|c|c|c|rrr|rrr|rrr|}\\hline'
-print ' \\njet     & \ST & \HT     &\multicolumn{9}{c|}{QCD multijets}\\\%\hline'
-print ' & $[$GeV$]$ &$[$GeV$]$&\multicolumn{3}{c}{prediction}&\multicolumn{3}{c}{simulation}&\multicolumn{3}{c|}{$F_{sel-to-antisel}$}\\\\\hline'
+print '\\begin{table}[ht]\\begin{center}\\resizebox{\\textwidth}{!}{\\begin{tabular}{|c|c|c|c|rrr|rrr|rrr|}\\hline'
+print ' \\njet     & \ST & \HT & $\\Delta\\Phi$     &\multicolumn{9}{c|}{QCD multijets}\\\%\hline'
+print ' & $[$GeV$]$ &$[$GeV$]$&&\multicolumn{3}{c}{prediction}&\multicolumn{3}{c}{simulation}&\multicolumn{3}{c|}{$F_{sel-to-antisel}$}\\\\\hline'
 print '\multirow{'+str(len(ratio))+'}{*}{\\begin{sideways}$'+varBin(CR)+'$\end{sideways}}'
-for njb in sorted(ratio):
+for njb in sorted([CR]):
   for stb in sorted(ratio[njb]):
     print '&\multirow{'+str(len(ratio[njb]))+'}{*}{$'+varBin(stb)+'$}'
     first = True
     for htb in sorted(ratio[njb][stb]):
-      if not first: print '&'
-      first = False
-      print '&$'+varBin(htb)+'$'
-      print ' & '+getNumString(ratio[njb][stb][htb]['NQCDFit'],ratio[njb][stb][htb]['NQCDFit_err'])\
-           +' & '+getNumString(ratio[njb][stb][htb]['NQCDSelMC'],ratio[njb][stb][htb]['NQCDSelMC_err'])\
-           +' & '+getNumString(ratio[njb][stb][htb]['F_seltoantisel'],ratio[njb][stb][htb]['F_seltoantisel_err'])+'\\\\'
+      for dP in sorted(ratio[njb][stb][htb]):
+        if not first: print '&'
+        first = False
+        print '&$'+varBin(htb)+'$&$'+str(dP)+'$'
+        print ' & '+getNumString(ratio[njb][stb][htb][dP]['NQCDFit'],ratio[njb][stb][htb][dP]['NQCDFit_err'])\
+             +' & '+getNumString(ratio[njb][stb][htb][dP]['NQCDSelMC'],ratio[njb][stb][htb][dP]['NQCDSelMC_err'])\
+             +' & '+getNumString(ratio[njb][stb][htb][dP]['F_seltoantisel'],ratio[njb][stb][htb][dP]['F_seltoantisel_err'])+'\\\\'
 print '\\hline\end{tabular}}\end{center}\caption{Closure and Ratio for QCD background in the CR, 0-tag regions, 3$fb^{-1}$}\label{tab:0b_QCDpredCR}\end{table}'
 
 #print 'Results QCD in 4-5j, 1b CR'
@@ -214,9 +222,9 @@ print '\\hline\end{tabular}}\end{center}\caption{Closure and Ratio for QCD backg
 
 print "Results QCD estimation"
 print
-print '\\begin{table}[ht]\\begin{center}\\begin{tabular}{|c|c|c|rrr|rrr|r|}\\hline'
-print ' \\njet     & \ST & \HT     &\multicolumn{7}{c|}{QCD multijets}\\\%\hline'
-print ' & $[$GeV$]$ &$[$GeV$]$&\multicolumn{3}{c}{prediction}&\multicolumn{3}{c}{simulation}&closure\\\\\hline'
+print '\\begin{table}[ht]\\begin{center}\\resizebox{\\textwidth}{!}{\\begin{tabular}{|c|c|c|c|rrr|rrr|r|}\\hline'
+print ' \\njet     & \ST & \HT  &$\\Delta\\Phi$   &\multicolumn{7}{c|}{QCD multijets}\\\%\hline'
+print ' & $[$GeV$]$ &$[$GeV$]$&&\multicolumn{3}{c}{prediction}&\multicolumn{3}{c}{simulation}&closure\\\\\hline'
 #first print yields in the CR 3-4j
 #print '\\hline'
 #print '\multirow{'+str(len(ratio))+'}{*}{\\begin{sideways}$'+varBin(CR)+'$\end{sideways}}'
@@ -242,18 +250,19 @@ for srNJet in sorted(signalRegion):
     print '&\multirow{'+str(rowsSt[srNJet][stb]['n'])+'}{*}{$'+varBin(stb)+'$}'
     first = True
     for htb in sorted(signalRegion[srNJet][stb]):
-      if not first: print '&'
-      first = False
-      res = abs(bins[srNJet][stb][htb][(0,0)]['NQCDpred']-bins[srNJet][stb][htb][(0,0)]['NQCDSelMC'])/bins[srNJet][stb][htb][(0,0)]['NQCDpred']
-      print '&$'+varBin(htb)+'$'
-      #print ' & '+getNumString(ratio[srNJet][stb][htb]['F_seltoantisel']*nAntiSel[srNJet][stb][htb][btb]['NdataAntiSel'],\
-      #           sqrt((ratio[srNJet][stb][htb]['F_seltoantisel_err']**2*nAntiSel[srNJet][stb][htb][btb]['NdataAntiSel']**2)+(nAntiSel[srNJet][stb][htb][btb]['NdataAntiSel_err']**2*ratio[srNJet][stb][htb]['F_seltoantisel']**2)))\
-      print ' & '+getNumString(bins[srNJet][stb][htb][(0,0)]['NQCDpred'],bins[srNJet][stb][htb][(0,0)]['NQCDpred_err'])\
-           +' & '+getNumString(bins[srNJet][stb][htb][(0,0)]['NQCDSelMC'], bins[srNJet][stb][htb][(0,0)]['NQCDSelMC_err'])\
-           +' & '+str(round(res,2))+'\\\\'
+      for dP in sorted(signalRegion[srNJet][stb][htb]):
+        if not first: print '&'
+        first = False
+        res = abs(bins[srNJet][stb][htb][(0,0)][dP]['NQCDpred']-bins[srNJet][stb][htb][(0,0)][dP]['NQCDSelMC'])/bins[srNJet][stb][htb][(0,0)][dP]['NQCDpred']
+        print '&$'+varBin(htb)+'$&$'+str(dP)+'$'
+        #print ' & '+getNumString(ratio[srNJet][stb][htb]['F_seltoantisel']*nAntiSel[srNJet][stb][htb][btb]['NdataAntiSel'],\
+        #           sqrt((ratio[srNJet][stb][htb]['F_seltoantisel_err']**2*nAntiSel[srNJet][stb][htb][btb]['NdataAntiSel']**2)+(nAntiSel[srNJet][stb][htb][btb]['NdataAntiSel_err']**2*ratio[srNJet][stb][htb]['F_seltoantisel']**2)))\
+        print ' & '+getNumString(bins[srNJet][stb][htb][(0,0)][dP]['NQCDpred'],bins[srNJet][stb][htb][(0,0)][dP]['NQCDpred_err'])\
+             +' & '+getNumString(bins[srNJet][stb][htb][(0,0)][dP]['NQCDSelMC'], bins[srNJet][stb][htb][(0,0)][dP]['NQCDSelMC_err'])\
+             +' & '+str(round(res,2))+'\\\\'
 #      if htb[1] == -1 : print '\\cline{2-9}'
 
-print '\\hline\end{tabular}\end{center}\caption{Closure table for QCD background , 0-tag regions, 3$fb^{-1}$}\label{tab:0b_QCDpred}\end{table}'
+print '\\hline\end{tabular}}\end{center}\caption{Closure table for QCD background , 0-tag regions, 3$fb^{-1}$}\label{tab:0b_QCDpred}\end{table}'
 
 #print "Results $R^{QCD}_{CS} $"
 #print
