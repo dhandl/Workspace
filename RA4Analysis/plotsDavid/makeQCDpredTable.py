@@ -9,7 +9,14 @@ from Workspace.HEPHYPythonTools.user import username
 from math import *
 
 #signalRegion = signalRegion3fb
-signalRegion = {(3, 4): {(250, 350): {(500, -1):   {(1.0):    {'deltaPhi': 1.0}}, #3-4jets QCD and W+jets control region
+inclusiveTemplate = {(3, 4): {(250,  -1): {(500, -1):   {(1.0):    {'deltaPhi': 1.0}}}}} #use inclusive LT,HT region to get the shape for the fit template
+
+fitCR =  {(3, 4): {(250, 350): {(500, -1):   {(1.0):    {'deltaPhi': 1.0}}}, #QCD CR exclusive in LT and inclusive in HT, where the fits are performed
+                   (350,  -1): {(500, -1):   {(1.0):    {'deltaPhi': 1.0}}},
+                   (350, 450): {(500, -1):   {(1.0):    {'deltaPhi': 1.0}}},
+                   (450, -1):  {(500, -1):   {(1.0):    {'deltaPhi': 1.0}}}}}
+
+signalRegion = {(3, 4): {(250, 350): {(500, -1):   {(1.0):    {'deltaPhi': 1.0}}, #3-4jets W+jets control region
                                       (500, 750):  {(1.0):    {'deltaPhi': 1.0}},
                                       (750, -1):   {(1.0):    {'deltaPhi': 1.0}}},
                          (350, -1):  {(500, -1):   {(0.75):   {'deltaPhi': 0.75}}},
@@ -56,12 +63,15 @@ signalRegion = {(3, 4): {(250, 350): {(500, -1):   {(1.0):    {'deltaPhi': 1.0}}
                           (450, -1): {(500, -1):   {(0.75):   {'deltaPhi': 0.75}}}}
 }
 
-btreg = [(0,0), (1,1), (2,2)] #1b and 2b estimates are needed for the btag fit
+
+btreg = [(0,0), (1,1), (2,-1)] #1b and 2b estimates are needed for the btag fit
 
 #add the path where the pickle files are located
 path = '/data/'+username+'/results2015/QCDEstimation/'
-pickleFile = '20151117_QCDestimation_pkl'
+pickleFile = '20151120_QCDestimation_MC3fb_pkl'
+pickleFit  = '20151120_fitResult_MC3fb_pkl'
 bins = pickle.load(file(path+pickleFile))
+fitRes = pickle.load(file(path+pickleFit))
 
 def getNumString(n,ne, acc=2):    ##For printing table 
   if type(n) is float and type(ne) is float:
@@ -92,19 +102,15 @@ ttCRbtb = (1,1)
 CR = (3,4)  
 btb = (0,0)
 ratio={}
-for srNJet in sorted(signalRegion):
+for srNJet in sorted(fitCR):
   ratio[srNJet] = {}
-  for stb in sorted(signalRegion[srNJet]):
+  for stb in sorted(fitCR[srNJet]):
     ratio[srNJet][stb] = {}
-    for htb in sorted(signalRegion[srNJet][stb]):
-      ratio[srNJet][stb][htb]={}
-      for dP in sorted(signalRegion[srNJet][stb][htb]):
-        #res = pickle.load(file(path+'QCDyieldFromTemplateFit_'+nameAndCut(stb, htb, CR, btb=btb, presel="(1)", charge="", btagVar = 'nBJetMediumCSV30')[0]+'_pkl'))
-        res = pickle.load(file(path+pickleFile))
-        ratio[srNJet][stb][htb][dP] = {'F_seltoantisel':res[CR][stb][htb][btb][dP]['F_seltoantisel'], 'F_seltoantisel_err':res[CR][stb][htb][btb][dP]['F_seltoantisel_err'],\
-                                 'NQCDSelMC':res[CR][stb][htb][btb][dP]['NQCDSelMC'], 'NQCDSelMC_err':res[CR][stb][htb][btb][dP]['NQCDSelMC_err'],\
-                                 'NQCDFit':res[CR][stb][htb][btb][dP]['QCD']['yield'], 'NQCDFit_err':sqrt(res[CR][stb][htb][btb][dP]['QCD']['yieldVar']),\
-                                 'NDATASel':res[CR][stb][htb][btb][dP]['NDATASel'], 'NDATASel_err':res[CR][stb][htb][btb][dP]['NDATASel_err']}
+    for htb in sorted(fitCR[srNJet][stb]):
+      ratio[srNJet][stb][htb] = {'F_seltoantisel':fitRes[CR][stb][htb]['F_seltoantisel'], 'F_seltoantisel_err':fitRes[CR][stb][htb]['F_seltoantisel_err'],\
+                                   'NQCDSelMC':fitRes[CR][stb][htb]['NQCDSelMC'], 'NQCDSelMC_err':fitRes[CR][stb][htb]['NQCDSelMC_err'],\
+                                   'NQCDFit':fitRes[CR][stb][htb]['QCD']['yield'], 'NQCDFit_err':sqrt(fitRes[CR][stb][htb]['QCD']['yieldVar']),\
+                                   'NDATASel':fitRes[CR][stb][htb]['NDATASel'], 'NDATASel_err':fitRes[CR][stb][htb]['NDATASel_err']}
 
 #nAntiSel = pickle.load(file(path+'RcsQCD3fb-1_pkl'))
 #nCRAntiSel = pickle.load(file(path+'RcsQCD_4-5j_1b_3fb-1_pkl'))
@@ -123,48 +129,49 @@ for srNJet in sorted(signalRegion):
 #print only yields and ratios from the CR
 print " QCD estimation and ratios in CR"
 print
-print '\\begin{table}[ht]\\begin{center}\\resizebox{\\textwidth}{!}{\\begin{tabular}{|c|c|c|c|rrr|rrr|rrr|}\\hline'
-print ' \\njet     & \ST & \HT & $\\Delta\\Phi$     &\multicolumn{9}{c|}{QCD multijets}\\\%\hline'
-print ' & $[$GeV$]$ &$[$GeV$]$&&\multicolumn{3}{c}{prediction}&\multicolumn{3}{c}{simulation}&\multicolumn{3}{c|}{$F_{sel-to-antisel}$}\\\\\hline'
+print '\\begin{table}[ht]\\begin{center}\\resizebox{\\textwidth}{!}{\\begin{tabular}{|c|c|c|rrr|rrr|rrr|}\\hline'
+print ' \\njet     & \ST & \HT      &\multicolumn{9}{c|}{QCD multijets}\\\%\hline'
+print ' & $[$GeV$]$ &$[$GeV$]$&\multicolumn{3}{c}{prediction}&\multicolumn{3}{c}{simulation}&\multicolumn{3}{c|}{$F_{sel-to-antisel}$}\\\\\hline'
+print '\\hline'
 print '\multirow{'+str(len(ratio))+'}{*}{\\begin{sideways}$'+varBin(CR)+'$\end{sideways}}'
 for njb in sorted([CR]):
   for stb in sorted(ratio[njb]):
-    print '&\multirow{'+str(len(ratio[njb]))+'}{*}{$'+varBin(stb)+'$}'
+    print '&$'+varBin(stb)+'$'
     first = True
     for htb in sorted(ratio[njb][stb]):
-      for dP in sorted(ratio[njb][stb][htb]):
-        if not first: print '&'
-        first = False
-        print '&$'+varBin(htb)+'$&$'+str(dP)+'$'
-        print ' & '+getNumString(ratio[njb][stb][htb][dP]['NQCDFit'],ratio[njb][stb][htb][dP]['NQCDFit_err'])\
-             +' & '+getNumString(ratio[njb][stb][htb][dP]['NQCDSelMC'],ratio[njb][stb][htb][dP]['NQCDSelMC_err'])\
-             +' & '+getNumString(ratio[njb][stb][htb][dP]['F_seltoantisel'],ratio[njb][stb][htb][dP]['F_seltoantisel_err'])+'\\\\'
+      if not first: print '&'
+      first = False
+      print '&$'+varBin(htb)+'$'
+      print ' & '+getNumString(ratio[njb][stb][htb]['NQCDFit'],ratio[njb][stb][htb]['NQCDFit_err'])\
+           +' & '+getNumString(ratio[njb][stb][htb]['NQCDSelMC'],ratio[njb][stb][htb]['NQCDSelMC_err'])\
+           +' & '+getNumString(ratio[njb][stb][htb]['F_seltoantisel'],ratio[njb][stb][htb]['F_seltoantisel_err'])+'\\\\'
 print '\\hline\end{tabular}}\end{center}\caption{Closure and Ratio for QCD background in the CR, 0-tag regions, 3$fb^{-1}$}\label{tab:0b_QCDpredCR}\end{table}'
 
-#print 'Results QCD in 4-5j, 1b CR'
-#print
-#print '\\begin{table}[ht]\\begin{center}\\resizebox{\\textwidth}{!}{\\begin{tabular}{|c|c|c|rrr|rrr|}\\hline'
-#print ' \\njet     & \ST & \HT     &\multicolumn{6}{c|}{QCD multijets in 4-5j,1b CR}\\\%\hline'
-#print ' & $[$GeV$]$ &$[$GeV$]$&\multicolumn{3}{c}{prediction}&\multicolumn{3}{c|}{simulation}\\\\\hline'
-##print yields in the CR 4-5j,1b
-#print '\\hline'
-#secondLine = False
-#for srNJet in sorted(signalRegion):
-#  print '\\hline'
-#  if secondLine: print '\\hline'
-#  secondLine = True
-#  print '\multirow{13}{*}{\\begin{sideways}$[4,5]$\end{sideways}}'
-#  for stb in sorted(signalRegion[srNJet]):
-#    print '&\multirow{'+str(rowsSt[srNJet][stb]['n'])+'}{*}{$'+varBin(stb)+'$}'
-#    first = True
-#    for htb in sorted(signalRegion[srNJet][stb]):
-#      if not first: print '&'
-#      first = False
-#      print '&$'+varBin(htb)+'$'
-#      print ' & '+getNumString(ratio[srNJet][stb][htb]['F_seltoantisel']*bins[srNJet][stb][htb][ttCRbtb]['NDATAAntiSel'],\
-#                 sqrt((ratio[srNJet][stb][htb]['F_seltoantisel_err']**2*bins[srNJet][stb][htb][ttCRbtb]['NDATAAntiSel']**2)+(bins[srNJet][stb][htb][ttCRbtb]['NDATAAntiSel_err']**2*ratio[srNJet][stb][htb]['F_seltoantisel']**2)))\
-#           +' & '+getNumString(bins[srNJet][stb][htb][ttCRbtb]['NQCDSelMC'], bins[srNJet][stb][htb][ttCRbtb]['NQCDSelMC_err'])\
-#print '\\hline\end{tabular}}\end{center}\caption{Closure table for QCD background , 0-tag regions, 3$fb^{-1}$}\label{tab:0b_QCDpred}\end{table}'
+print 'Results QCD in 4-5j, 1b CR'
+print
+print '\\begin{table}[ht]\\begin{center}\\resizebox{\\textwidth}{!}{\\begin{tabular}{|c|c|c|c|rrr|rrr|r|}\\hline'
+print ' \\njet     & \ST & \HT & $ \\Delta\\Phi$    &\multicolumn{7}{c|}{QCD multijets in 4-5j,1b CR}\\\%\hline'
+print ' & $[$GeV$]$ &$[$GeV$]$&&\multicolumn{3}{c}{prediction}&\multicolumn{3}{c|}{simulation}&closure\\\\\hline'
+#print yields in the CR 4-5j,1b
+secondLine = False
+print '\\hline'
+if secondLine: print '\\hline'
+secondLine = True
+print '\multirow{13}{*}{\\begin{sideways}$[4,5]$\end{sideways}}'
+for stb in sorted(signalRegion[(4,5)]):
+  print '&\multirow{'+str(rowsSt[(4,5)][stb]['n'])+'}{*}{$'+varBin(stb)+'$}'
+  first = True
+  for htb in sorted(signalRegion[(4,5)][stb]):
+    for dP in sorted(signalRegion[(4,5)][stb][htb]):
+      res = abs(bins[(4,5)][stb][htb][(1,1)][dP]['NQCDpred']-bins[(4,5)][stb][htb][(1,1)][dP]['NQCDSelMC'])/bins[(4,5)][stb][htb][(1,1)][dP]['NQCDpred']
+      if not first: print '&'
+      first = False
+      print '&$'+varBin(htb)+'$&$'+str(dP)+'$' 
+      print ' & '+getNumString(bins[(4,5)][stb][htb][(1,1)][dP]['NQCDpred'],bins[(4,5)][stb][htb][(1,1)][dP]['NQCDpred_err'])\
+             +' & '+getNumString(bins[(4,5)][stb][htb][(1,1)][dP]['NQCDSelMC'], bins[(4,5)][stb][htb][(1,1)][dP]['NQCDSelMC_err'])\
+             +' & '+str(round(res,2))+'\\\\'
+
+print '\\hline\end{tabular}}\end{center}\caption{Closure table for QCD background , 0-tag regions, 3$fb^{-1}$}\label{tab:0b_QCDpred}\end{table}'
 
 #print RCS factors in the CR 4-5j, 1b
 #print 'RCS in CR 4-5j,1b'

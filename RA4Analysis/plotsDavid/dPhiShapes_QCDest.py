@@ -18,9 +18,9 @@ from math import *
 from Workspace.HEPHYPythonTools.user import username
 from LpTemplateFit import LpTemplateFit
 
-preprefix = 'QCDestimation/newAntiID/normalization/'
+preprefix = 'QCDestimation/newAntiID/hOverE/normalization/'
 wwwDir = '/afs/hephy.at/user/'+username[0]+'/'+username+'/www/RunII/Spring15_25ns/'+preprefix+'/'
-prefix = 'deltaPhi_singleElectronic'
+prefix = 'Lp_singleElectronic'
  
 if not os.path.exists(wwwDir):
   os.makedirs(wwwDir)
@@ -82,12 +82,16 @@ def makeWeight(lumi=4., sampleLumi=3.,debug=False):
     weight_str = '(((weight)/'+str(sampleLumi)+')*'+str(lumi)+')'
     weight_err_str = '('+weight_str+'*'+weight_str+')'
     return weight_str, weight_err_str
+lumi = 3.
+sampleLumi = 1.55
+debugReweighting = False
+weight_str, weight_err_str = makeWeight(lumi, sampleLumi=sampleLumi, debug=debugReweighting)
 
-def getRCS(c, cut, dPhiCut, useWeight = False):
+def getRCS(c, cut, dPhiCut, useWeight = False, weight = 'weight'):
 #  dPhiStr = 'acos((LepGood_pt+met_pt*cos(LepGood_phi-met_phi))/sqrt(LepGood_pt**2+met_pt**2+2*met_pt*LepGood_pt*cos(LepGood_phi-met_phi)))'
   dPhiStr = 'deltaPhi_Wl'
   if useWeight:
-    h = getPlotFromChain(c, dPhiStr, [0,dPhiCut,pi], cutString=cut, binningIsExplicit=True)
+    h = getPlotFromChain(c, dPhiStr, [0,dPhiCut,pi], cutString=cut, binningIsExplicit=True, weight = weight)
   else:
     h = getPlotFromChain(c, dPhiStr, [0,dPhiCut,pi], cutString=cut, binningIsExplicit=True, weight='(1)')
   h.Sumw2()
@@ -111,17 +115,12 @@ filters = "&&Flag_CSCTightHaloFilter&&Flag_HBHENoiseFilter_fix&&Flag_HBHENoiseFi
 #filters = "&&Flag_CSCTightHaloFilter&&Flag_HBHENoiseFilter_fix&&Flag_HBHENoiseIsoFilter&&Flag_goodVertices&&Flag_eeBadScFilter"
 
 presel = 'nLep==1&&nVeto==0&&nEl==1&&leptonPt>25&&Jet2_pt>80'
-antiSelStr = presel+filters+'&&Selected==-1'
+antiSelStr = presel+filters+'&&Selected==-1&&leptonHoverE>0.01'
 SelStr = presel+filters+'&&Selected==1'
 
 cQCD  = getChain(QCDHT_25ns,histname='')
 #cEWK  = getChain([WJetsHTToLNu_25ns, TTJets_HTLO_25ns, singleTop_25ns, DY_25ns, TTV_25ns],histname='')
 #cData = getChain(data_ele_25ns , histname='')
-
-lumi = 3.
-sampleLumi = 1.55
-debugReweighting = False
-weight_str, weight_err_str = makeWeight(lumi, sampleLumi=sampleLumi, debug=debugReweighting)
 
 histos = {}
 bins = {}
@@ -143,16 +142,16 @@ for srNJet in sorted(signalRegion):
           histos['QCD']={}
 #          histos['EWK']={}
 #          histos['DATA']={}
-          histos['QCD']['antiSelection']=ROOT.TH1F('QCD_antiSelection','QCD_antiSelection',30,0.,pi)
-          histos['QCD']['Selection']=ROOT.TH1F('QCD_Selection','QCD_Selection',30,0.,pi)
+          histos['QCD']['antiSelection']=ROOT.TH1F('QCD_antiSelection','QCD_antiSelection',30,-0.5,2.5)
+          histos['QCD']['Selection']=ROOT.TH1F('QCD_Selection','QCD_Selection',30,-0.5,2.5)
 #          histos['EWK']['antiSelection']=ROOT.TH1F('EWK_antiSelection','EWK_antiSelection',30,-0.5,2.5)
 #          histos['EWK']['Selection']=ROOT.TH1F('EWK_Selection','EWK_Selection',30,-0.5,2.5)
 #          histos['DATA']['antiSelection']=ROOT.TH1F('DATA_antiSelection','DATA_antiSelection',30,-0.5,2.5)
 #          histos['DATA']['Selection']=ROOT.TH1F('DATA_Selection','DATA_Selection',30,-0.5,2.5)
 
           Canv = ROOT.TCanvas('Canv','Canv')
-          Canv.SetLogy()
-          leg = ROOT.TLegend(0.7,0.75,0.98,0.95)
+#          Canv.SetLogy()
+          leg = ROOT.TLegend(0.7,0.8,0.98,0.95)
           leg.SetFillColor(0)
           leg.SetBorderSize(1)
           leg.SetShadowColor(ROOT.kWhite)
@@ -161,8 +160,8 @@ for srNJet in sorted(signalRegion):
           text.SetTextSize(0.045)
           text.SetTextAlign(11)
         
-          cQCD.Draw('deltaPhi_Wl>>QCD_antiSelection','('+weight_str+')*('+antiSelCut+')')
-          cQCD.Draw('deltaPhi_Wl>>QCD_Selection','('+weight_str+')*('+SelCut+')')
+          cQCD.Draw('Lp>>QCD_antiSelection','('+weight_str+')*('+antiSelCut+')')
+          cQCD.Draw('Lp>>QCD_Selection','('+weight_str+')*('+SelCut+')')
 #          cEWK.Draw('Lp>>EWK_antiSelection','(weight)*('+antiSelCut+')')
 #          cEWK.Draw('Lp>>EWK_Selection','(weight)*('+SelCut+')')
 #          cData.Draw('Lp>>DATA_antiSelection','('+antiSelCut+trigger+')')
@@ -178,7 +177,7 @@ for srNJet in sorted(signalRegion):
   
           for hist in [histos['QCD']['antiSelection'],histos['QCD']['Selection']]:#,histos['EWK']['antiSelection'],histos['EWK']['Selection']]:
             hist.SetStats(0)
-            hist.GetYaxis().SetTitle('# of Events')
+            hist.GetYaxis().SetTitle('a.u.')
             hist.GetXaxis().SetTitle('L_{p}')
             hist.SetLineWidth(2)
             hist.SetMarkerStyle(20)
@@ -204,8 +203,8 @@ for srNJet in sorted(signalRegion):
 #          histos['QCD']['Selection'].SetMinimum(0)
             
           leg.Draw()
-          text.DrawLatex(0.15,.96,"CMS #bf{#it{Preliminary}}")
-          text.DrawLatex(0.6,0.96,"#bf{L="+str(lumi)+" fb^{-1} (13 TeV)}")
+          text.DrawLatex(0.16,.96,"CMS #bf{#it{Simulation}}")
+          text.DrawLatex(0.75,0.96,"#bf{MC (13 TeV)}")
   
           Canv.cd()
           Canv.Print(wwwDir+prefix+Selname+'.png')
