@@ -118,6 +118,7 @@ def getChunks(sample,  maxN=-1):
   import os, subprocess, datetime
   #print "sample dir:" , sample['dir']
   chunks = [{'name':x} for x in os.listdir(sample['dir']) if x.startswith(sample['chunkString']+'_Chunk') or x==sample['name']]
+  ## there in the line above. if x==sample['name'], the chunk directories are ignored! 
   #print chunks
   chunks=chunks[:maxN] if maxN>0 else chunks
   sumWeights=0
@@ -289,7 +290,7 @@ def getCutYieldFromChain(c, cutString = "(1)", cutFunc = None, weight = "weight"
   return res
 
 def getYieldFromChain(c, cutString = "(1)", weight = "weight", returnError=False):
-  h = ROOT.TH1F('h_tmp', 'h_tmp', 1,0,2)
+  h = ROOT.TH1D('h_tmp', 'h_tmp', 1,0,2)
   h.Sumw2()
   c.Draw("1>>h_tmp", "("+weight+")*("+cutString+")", 'goff')
   res = h.GetBinContent(1)
@@ -302,13 +303,13 @@ def getYieldFromChain(c, cutString = "(1)", weight = "weight", returnError=False
 
 def getPlotFromChain(c, var, binning, cutString = "(1)", weight = "weight", binningIsExplicit=False, addOverFlowBin=''):
   if binningIsExplicit:
-    h = ROOT.TH1F('h_tmp', 'h_tmp', len(binning)-1, array('d', binning))
+    h = ROOT.TH1D('h_tmp', 'h_tmp', len(binning)-1, array('d', binning))
 #    h.SetBins(len(binning), array('d', binning))
   else:
     if len(binning)==6:
-      h = ROOT.TH2F('h_tmp', 'h_tmp', *binning)
+      h = ROOT.TH2D('h_tmp', 'h_tmp', *binning)
     else:
-      h = ROOT.TH1F('h_tmp', 'h_tmp', *binning)
+      h = ROOT.TH1D('h_tmp', 'h_tmp', *binning)
   c.Draw(var+">>h_tmp", weight+"*("+cutString+")", 'goff')
   res = h.Clone()
   h.Delete()

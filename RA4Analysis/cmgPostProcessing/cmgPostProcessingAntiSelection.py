@@ -1,4 +1,5 @@
 import ROOT
+import pickle
 import sys, os, copy, random, subprocess, datetime
 from array import array
 from Workspace.RA4Analysis.cmgObjectSelection import cmgLooseLepIndices, splitIndList, get_cmg_jets_fromStruct, splitListOfObjects, cmgTightMuID, cmgTightEleID, cmgAntiSelEleIndices, cmgAntiSelEleIndicesFromOther
@@ -28,7 +29,7 @@ defSampleStr = "TTJets_LO_HT600to800_25ns"
 subDir = "postProcessed_Spring15_antiSelection_v5"
 
 #branches to be kept for data and MC
-branchKeepStrings_DATAMC = ["run", "lumi", "evt", "isData", "rho", "nVert", 
+branchKeepStrings_DATAMC = ["run", "lumi", "evt", "isData", "rho", "nVert",
                      "nJet25", "nBJetLoose25", "nBJetMedium25", "nBJetTight25", "nJet40", "nJet40a", "nBJetLoose40", "nBJetMedium40", "nBJetTight40", 
                      "nLepGood20", "nLepGood15", "nLepGood10", "htJet25", "mhtJet25", "htJet40j", "htJet40", "mhtJet40", "nSoftBJetLoose25", "nSoftBJetMedium25", "nSoftBJetTight25", 
                      "met*","Flag_*","HLT_*",
@@ -60,6 +61,10 @@ parser.add_option("--skim", dest="skim", default="", type="string", action="stor
 parser.add_option("--leptonSelection", dest="leptonSelection", default="hard", type="string", action="store", help="which lepton selection? 'soft', 'hard', 'none', 'dilep'?")
 parser.add_option("--small", dest="small", default = False, action="store_true", help="Just do a small subset.")
 parser.add_option("--overwrite", dest="overwrite", default = False, action="store_true", help="Overwrite?")
+parser.add_option("--calcbtagweights", dest="systematics", default = False, action="store_true", help="Calculate b-tag weights for systematics?")
+parser.add_option("--btagWeight", dest="btagWeight", default = 2, action="store", help="Max nBJet to calculate the b-tag weight for")
+parser.add_option("--hadronicLeg", dest="hadronicLeg", default = False, action="store_true", help="Use only the hadronic leg of the sample?")
+parser.add_option("--manScaleFactor", dest="manScaleFactor", default = 1, action="store", help="define a scale factor for the whole sample")
 
 (options, args) = parser.parse_args()
 assert options.leptonSelection in ['soft', 'hard', 'none', 'dilep'], "Unknown leptonSelection: %s"%options.leptonSelection
@@ -70,7 +75,9 @@ if options.skim=='HT400':
   skimCond = "Sum$(Jet_pt)>400"
 if options.skim=='HT400ST200':   ##tuples have already ST200 skim
   skimCond = "Sum$(Jet_pt)>400&&(LepGood_pt[0]+met_pt)>200"
-if options.skim=="LHEHT600":
+if options.skim=='HT500ST250':  
+  skimCond = "Sum$(Jet_pt)>500&&(LepGood_pt[0]+met_pt)>250"
+if options.skim=='LHEHT600':
   skimCond = "lheHTIncoming<600"
 
 ##In case a lepton selection is required, loop only over events where there is one 
@@ -83,10 +90,16 @@ if options.leptonSelection.lower()=='soft':
   skimCond += "&&Sum$(LepGood_pt>5&&LepGood_pt<25&&abs(LepGood_eta)<2.4)>=1"
 if options.leptonSelection.lower()=='hard':
   #skimCond += "&&Sum$(LepGood_pt>25&&LepGood_relIso03<0.4&&abs(LepGood_eta)<2.4)>=1"
-  skimCond += "&&Sum$(LepGood_pt>25&&abs(LepGood_eta)<2.5)>=1"
+  skimCond += "&&Sum$(LepGood_pt>25&&abs(LepGood_eta)<2.5)>=0"
 if options.leptonSelection.lower()=='dilep':
   #skimCond += "&&Sum$(LepGood_pt>25&&LepGood_relIso03<0.4&&abs(LepGood_eta)<2.4)>=1"
   skimCond += "&&Sum$(LepGood_pt>15&&abs(LepGood_eta)<2.4)>1"
+
+if options.hadronicLeg:
+  skimCond += "&&(nGenLep+nGenTau)==0"
+
+if options.manScaleFactor!=1:
+  targetlumi = targetlumi*options.manScaleFactor
 
 if options.skim=='inc':
   skimCond = "(1)"
@@ -142,7 +155,12 @@ for isample, sample in enumerate(allSamples):
     if "TTJets" in sample['dbsName']: lumiScaleFactor = xsec[sample['dbsName']]*target_lumi/float(sumWeight)
     else: lumiScaleFactor = target_lumi/float(sumWeight)
     branchKeepStrings = branchKeepStrings_DATAMC + branchKeepStrings_MC
-
+  
+  sampleKey = ''
+  if 'TTJets' in sample['dbsName']: sampleKey = 'TTJets'
+  elif 'WJets' in sample['dbsName']: sampleKey = 'WJets'
+  else: sampleKey = 'none'
+  
   readVariables = ['met_pt/F', 'met_phi/F']
   newVariables = ['weight/F', 'muonDataSet/I', 'eleDataSet/I']
   aliases = [ "met:met_pt", "metPhi:met_phi"]
@@ -232,6 +250,9 @@ for isample, sample in enumerate(allSamples):
             s.muonDataSet = False
             s.eleDataSet = True
 
+        nVert = t.GetLeaf('nVert').GetValue()
+        s.puReweight_true = 1 if sample['isData'] else PU_histo.GetBinContent(PU_histo.FindBin(nVert))
+        #calculatedWeight = True
         if not sample['isData']:
           s.muonDataSet = False
           s.eleDataSet = False
