@@ -1,7 +1,7 @@
 import ROOT
 import sys, os, copy, random, subprocess, datetime
 from array import array
-from Workspace.RA4Analysis.cmgObjectSelection import cmgLooseLepIndices, splitIndList, get_cmg_jets_fromStruct, splitListOfObjects, cmgTightMuID, cmgTightEleID, cmgAntiSelEleIndices, cmgAntiSelEleIndicesFromOther
+from Workspace.RA4Analysis.cmgObjectSelection import cmgLooseLepIndices, splitIndList, get_cmg_jets_fromStruct, splitListOfObjects, cmgTightMuID, cmgTightEleID
 from Workspace.HEPHYPythonTools.xsec import xsec
 from Workspace.RA4Analysis.helpers import cleanJets, getGenTopWLepton, getGenWandLepton 
 from Workspace.HEPHYPythonTools.helpers import getObjFromFile, getObjDict, getFileList, deltaR, deltaPhi, deltaR2
