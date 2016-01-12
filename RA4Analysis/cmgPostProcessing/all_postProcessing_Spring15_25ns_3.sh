@@ -2,10 +2,18 @@
 ########Spring15###############
 
 #python cmgPostProcessing.py--overwrite  --leptonSelection=hard --skim=""  --samples=WJetsToLNu_HT600toInf_25ns
-python cmgPostProcessingAntiSelectionV2.py --overwrite --leptonSelection=none --samples=WJetsToLNu_HT100to200_25ns
-python cmgPostProcessingAntiSelectionV2.py --overwrite --leptonSelection=none --samples=WJetsToLNu_HT200to400_25ns
-python cmgPostProcessingAntiSelectionV2.py --overwrite --leptonSelection=none --samples=WJetsToLNu_HT400to600_25ns
-python cmgPostProcessingAntiSelectionV2.py --overwrite --leptonSelection=none --samples=WJetsToLNu_HT600to800_25ns
-python cmgPostProcessingAntiSelectionV2.py --overwrite --leptonSelection=none --samples=WJetsToLNu_HT800to1200_25ns
-python cmgPostProcessingAntiSelectionV2.py --overwrite --leptonSelection=none --samples=WJetsToLNu_HT1200to2500_25ns
-python cmgPostProcessingAntiSelectionV2.py --overwrite --leptonSelection=none --samples=WJetsToLNu_HT2500toInf_25ns
+#python cmgPostProcessingAntiSelectionV2.py --overwrite --leptonSelection=none --samples=WJetsToLNu_HT100to200_25ns
+#python cmgPostProcessingAntiSelectionV2.py --overwrite --leptonSelection=none --samples=WJetsToLNu_HT200to400_25ns
+#python cmgPostProcessingAntiSelectionV2.py --overwrite --leptonSelection=none --samples=WJetsToLNu_HT400to600_25ns
+#python cmgPostProcessingAntiSelectionV2.py --overwrite --leptonSelection=none --samples=WJetsToLNu_HT600to800_25ns
+#python cmgPostProcessingAntiSelectionV2.py --overwrite --leptonSelection=none --samples=WJetsToLNu_HT800to1200_25ns
+#python cmgPostProcessingAntiSelectionV2.py --overwrite --leptonSelection=none --samples=WJetsToLNu_HT1200to2500_25ns
+#python cmgPostProcessingAntiSelectionV2.py --overwrite --leptonSelection=none --samples=WJetsToLNu_HT2500toInf_25ns
+#python cmgPostProcessing.py --leptonSelection=hard --skim=""  --samples=WJetsToLNu_HT100to200_25ns
+python cmgPostProcessing.py --overwrite --calcbtagweights --skim="HT500ST250"  --samples=WJetsToLNu_HT200to400_25ns
+python cmgPostProcessing.py --overwrite --calcbtagweights --skim="HT500ST250"  --samples=WJetsToLNu_HT400to600_25ns
+#python cmgPostProcessing.py --leptonSelection=hard --skim=""  --samples=WJetsToLNu_HT600toInf_25ns
+python cmgPostProcessing.py --overwrite --calcbtagweights --skim="HT500ST250" --samples=WJetsToLNu_HT600to800_25ns
+python cmgPostProcessing.py --overwrite --calcbtagweights --skim="HT500ST250" --samples=WJetsToLNu_HT800to1200_25ns
+python cmgPostProcessing.py --overwrite --calcbtagweights --skim="HT500ST250" --samples=WJetsToLNu_HT1200to2500_25ns
+python cmgPostProcessing.py --overwrite --calcbtagweights --skim="HT500ST250" --samples=WJetsToLNu_HT2500toInf_25ns

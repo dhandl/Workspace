@@ -9,7 +9,8 @@ from array import array
 from Workspace.HEPHYPythonTools.helpers import *
 from Workspace.HEPHYPythonTools.xsec import *
 from Workspace.HEPHYPythonTools.user import *
-from Workspace.RA4Analysis.cmgTuples_Spring15_25ns_postProcessed_antiSel import *
+#from Workspace.RA4Analysis.cmgTuples_Spring15_25ns_postProcessed_antiSel import *
+from Workspace.RA4Analysis.cmgTuples_Spring15_MiniAODv2_25ns_postProcessed import *
 from Workspace.RA4Analysis.helpers import *
 from draw_helpers import *
 from eleID_helper import *
